@@ -1,5 +1,6 @@
 const userRouter = require('express').Router(); //on execeute la methode express du router
 const userModel = require('../models/userModel');//importation model user
+const bcrypt = require('bcrypt');
 
 //methode get, Rendu des utilisateurs
 userRouter.get('/users', async (req, res) => {
@@ -14,7 +15,13 @@ userRouter.get('/users', async (req, res) => {
 //method post, ajout d'utilisateur 
 userRouter.post('/users', async (req, res) => {
     try {
-        let user = new userModel(req.body)
+        let saltRounds = 10; // nombre de tours de chiffrement
+        let hashedPassword =  bcrypt.hashSync(req.body.password, saltRounds); // mot de passe crypté
+        let user = new userModel({
+            name: req.body.name,
+            email: req.body.email,
+            password: hashedPassword // mot de passe crypté est stocké dans la base de données
+        });
         await user.save();
         res.json(user);
     } catch (error) {
@@ -54,17 +61,21 @@ userRouter.delete('/users/:id', async (req, res) => {
 
 userRouter.post('/users/login', async (req, res) => {
     try {
-        let userLogin = await userModel.findOne({ email: req.body.email, password: req.body.password},);
-        if (userLogin) {
-            res.status(200);
+        let userLogin = await userModel.findOne({ email: req.body.email },);
+        if (!userLogin) {
+            res.status(400).json({ message: 'Adresse mail incorrecte !' });
             console.log(userLogin.status);
             res.json(userLogin._id);
-        }else{
-            res.status(400)
-            res.json('error');
+        } else {
+            let match = await bcrypt.compare(req.body.password, userLogin.password);
+            if (match) {
+                res.status(200).json(userLogin._id);
+            } else {
+                res.status(400).json({ message: 'Mot de passe incorrect !' });
+            }
         }
     } catch (error) {
-        res.json({ mess: "Error" })
+        res.status(500).json({ mess: "Error from server !" })
     }
 });
 
