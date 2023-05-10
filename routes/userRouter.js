@@ -52,20 +52,21 @@ userRouter.delete('/users/:id', async (req, res) => {
     }
 });
 
-// userRouter.post('/users/login', async (req, res) => {
-//     try {
-//         let userLogin = await userModel.findOne({ email: req.body.email, password: req.body.password},);
-//         if (userLogin) {
-//             res.status(200);
-//             res.json('Connecté Avec succès !');
-//         }else{
-//             res.status(400)
-//             res.json('error');
-//         }
-//     } catch (error) {
-//         res.json({ mess: "Error" })
-//     }
-// });
+userRouter.post('/users/login', async (req, res) => {
+    try {
+        let userLogin = await userModel.findOne({ email: req.body.email, password: req.body.password},);
+        if (userLogin) {
+            res.status(200);
+            console.log(userLogin.status);
+            res.json(userLogin._id);
+        }else{
+            res.status(400)
+            res.json('error');
+        }
+    } catch (error) {
+        res.json({ mess: "Error" })
+    }
+});
 
 //export du routeur pour pouvoir l'utiliser ailleurs
 module.exports = userRouter;

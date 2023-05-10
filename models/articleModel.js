@@ -6,6 +6,10 @@ const articleSchema = new mongoose.Schema({
         },
         text: {
             type: String 
+        },
+        author:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "users"
         }
 })
 
